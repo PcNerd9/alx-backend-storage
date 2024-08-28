@@ -11,5 +11,4 @@ def insert_school(mongo_collection, **kwargs):
     """
     insert a new document in a collection
     """
-    for key, value in kwargs.items():
-        mongo_collection.insert_one({key: value})
+    mongo_collection.insert(kwargs)

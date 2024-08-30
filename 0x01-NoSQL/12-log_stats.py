@@ -8,6 +8,8 @@ logs stored in Mongodb
 from pymongo import MongoClient
 
 def main():
+    """ The main entrance to the program
+    """
     client = MongoClient("mongodb://localhost:27017/")
     db = client.logs
     collection = db.nginx

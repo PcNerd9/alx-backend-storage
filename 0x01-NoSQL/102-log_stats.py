@@ -32,6 +32,21 @@ def main():
     print("\tmethod DELETE: {}".format(delete_count))
     print("{} status check".format(status))
 
+    print("IPs:")
+    pipeline = [
+            {"$group": {
+                "_id": "$ip",
+                "totalNumber": {"$sum": 1}
+                }
+             },
+            {"$sort": {"totalNumber": -1}},
+            {"$limit": 10}
+            ]
+    result = collection.aggregate(pipeline)
+    result_list = list(result)
+    for result in result_list:
+        print("\t{}: {}".format(result.get("_id"), result.get("totalNumber")))
+
 
 if __name__ == "__main__":
     main()

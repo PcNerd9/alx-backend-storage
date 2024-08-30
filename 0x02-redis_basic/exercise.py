@@ -3,9 +3,21 @@
 """
 contains a Cache class
 """
-
+import functools
 import redis
+from typing import Callable, Union, Optional
 from uuid import uuid4
+
+
+def count_calls(method: Callable) -> Callable:
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key = method.__qualname__
+
+        self._redis.incr(key)
+
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -17,10 +29,42 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb
 
-    def store(self, data: str | bytes | int | float) -> str:
+    @count_calls
+    def store(self, data: Union[int, str, float, bytes]) -> str:
         """
         store a data in the redis database using a random key
         """
         key = str(uuid4())
         self._redis.set(key, data)
         return key
+
+    @count_calls
+    def get(self, key: str,
+            fn: Optional[Callable] = None) -> Union[int,
+                                                    str, float,
+                                                    bytes]:
+        """
+        get a data from redis and convert to the data type of
+        desires
+        """
+        result = self._redis.get(key)
+        if fn is None:
+            return result
+        if result is not None:
+            return fn(result)
+        else:
+            return None
+
+    @count_calls
+    def get_str(self, key: str) -> str:
+        """
+        get the string representation of data stored in redis
+        """
+        return self.get(key, str)
+
+    @count_calls
+    def get_int(self, key: str) -> int:
+        """
+        get the integer representation of data stored in redis
+        """
+        return self.get(key, int)

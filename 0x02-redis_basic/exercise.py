@@ -10,8 +10,16 @@ from uuid import uuid4
 
 
 def call_history(method: Callable) -> Callable:
+    """
+    a decorator to store the history of inputs
+    and outpus for a particular function
+    """
+
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
+        """
+        the wrapper function that is going to be return
+        """
         input_key = method.__qualname__ + ":inputs"
         output_key = method.__qualname__ + ":outputs"
 
@@ -26,8 +34,15 @@ def call_history(method: Callable) -> Callable:
 
 
 def count_calls(method: Callable) -> Callable:
+    """
+    a decorator that takes a single method argument and returns
+    a callable
+    """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
+        """
+        counts how many methods of the Cache class are called
+        """
         key = method.__qualname__
 
         self._redis.incr(key)

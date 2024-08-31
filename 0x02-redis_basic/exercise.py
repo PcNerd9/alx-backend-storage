@@ -43,7 +43,7 @@ class Cache:
         a private variable
         """
         self._redis = redis.Redis()
-        self._redis.flushdb
+        self._redis.flushdb()
 
     @call_history
     @count_calls
@@ -88,3 +88,24 @@ class Cache:
         get the integer representation of data stored in redis
         """
         return self.get(key, int)
+
+
+def replay(fn: Callable) -> None:
+    """
+    display the history of calls of a particular function
+    """
+
+    function_name = fn.__qualname__
+    cache = redis.Redis()
+    no_of_times = int(cache.get(function_name))
+
+    inputs = cache.lrange(function_name + ":inputs", 0, -1)
+    outputs = cache.lrange(function_name + ":outputs", 0, -1)
+    combine = list(zip(inputs, outputs))
+
+    print("{} was called {} times:".format(function_name,
+                                           no_of_times))
+    for com in combine:
+        print("{}(*{}) -> {}".format(function_name,
+                                     com[0].decode("utf-8"),
+                                     com[1].decode("utf-8")))
